@@ -9,7 +9,7 @@ Ptero bot is a discord bot that is designed to help you manage your pterodactyl 
 - configure the .env file with the correct values exemple: 
   ````
     DISCORD_TOKEN=your_discord_token
-    DISCORD_CLIENT_ID=1253298808528572426
+    DISCORD_CLIENT_ID=your_discord_client_id
     DATABASE_URL="file:./dev.db"
   ```
 - run `docker compose up -d`
