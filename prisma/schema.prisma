@@ -1,0 +1,26 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model GuildConfig {
+  guildId String @id
+  token String
+  api_url String
+  consoleChannels ConsoleChannel[]
+}
+
+model ConsoleChannel {
+  id Int @id @default(autoincrement())
+  channelId String
+  serverId String
+  guildConfig GuildConfig @relation(fields: [guildId], references: [guildId])
+  guildId String
+}
