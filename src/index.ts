@@ -1,20 +1,22 @@
 import { Client } from "discord.js";
-import { deployCommands, deployGlobalCommands } from "./deploy-commands";
+import { deployCommands } from "./deploy-commands";
 import { commands } from "./commands";
 import { config } from "./config";
 import { buttons } from "./buttons";
-import { autocomplete } from './commands/info';
+import { initWebsockets, websockets } from "./services/pterodactylWebsocket";
 
 const client = new Client({
-  intents: ["Guilds", "GuildMessages", "DirectMessages"],
+  intents: ["Guilds", "GuildMessages", "DirectMessages", "MessageContent"],
 });
 
-client.once("ready", () => {
+client.once("ready", async (bot) => {
   console.log("Discord bot is ready! 🤖");
-  
-  deployCommands({
-    guildId: "399946899697827840",
-  });
+  const guild = await bot.guilds.fetch()
+  guild.each(async (guild) => {
+    await deployCommands({ guildId: guild.id });
+
+    await initWebsockets(await guild.fetch());
+  })
 });
 
 client.on("guildCreate", async (guild) => {
@@ -46,6 +48,14 @@ client.on("interactionCreate", async (interaction) => {
         await command.autocomplete(interaction);
       }
     }
+
+    if (interaction.isStringSelectMenu()) {
+      const { customId } = interaction;
+      const command = commands[customId as keyof typeof commands];
+      if (command && 'select' in command && typeof command.select == 'function'){
+        await command.select(interaction);
+      }
+    }
   } catch (error) {
     console.error(error);
     if ('reply' in interaction) {
@@ -58,6 +68,13 @@ client.on("interactionCreate", async (interaction) => {
     if ('respond' in interaction) {
       await interaction.respond([{name: "There was an error while executing this command, did you configure the api correctly ?", value: "did you configure the api correctly ?"}]);
     }
+  }
+});
+
+client.on('messageCreate', async (message) => {
+  if (message.author.bot) return;
+  if (message.channel.id in websockets && message.content.startsWith("> ")) {
+    websockets[message.channel.id].sendCommand(message.content.slice(2));
   }
 });
 

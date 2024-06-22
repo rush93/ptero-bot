@@ -27,3 +27,39 @@ export async function updateGuildConfig(guildId: string, config: Partial<Omit<Pr
         data: config
     })
 }
+
+export async function deleteConsoleChannel(guildId: string, channelId: string) {
+    return await prisma.consoleChannel.deleteMany({
+        where: {
+            guildId,
+            channelId
+        }
+    })
+}
+
+export async function createConsoleChannel(guildId: string, channelId: string, serverId: string) {
+    return await prisma.consoleChannel.create({
+        data: {
+            guildId,
+            channelId,
+            serverId
+        }
+    })
+}
+
+export async function getConsoleChannels(guildId: string) {
+    return await prisma.consoleChannel.findMany({
+        where: {
+            guildId
+        }
+    })
+}
+
+export async function getConsoleChannel(guildId: string, channelId: string) {
+    return await prisma.consoleChannel.findFirst({
+        where: {
+            guildId,
+            channelId
+        }
+    })
+}

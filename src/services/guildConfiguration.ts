@@ -1,4 +1,4 @@
-import { AutocompleteInteraction, ButtonInteraction, CommandInteraction, InteractionResponse } from "discord.js";
+import { AutocompleteInteraction, ButtonInteraction, CommandInteraction, InteractionResponse, StringSelectMenuInteraction } from "discord.js";
 import { getGuildConfig } from "./db";
 import { Prisma } from "@prisma/client";
 
@@ -16,15 +16,14 @@ export async function getGuildIfConfigured(guildId: string) {
     return guildConfig;
 } 
 
-const reply = async (interaction: CommandInteraction|ButtonInteraction|AutocompleteInteraction, content: string) => {
+const reply = async (interaction: CommandInteraction|ButtonInteraction|AutocompleteInteraction|StringSelectMenuInteraction, content: string) => {
     if ('reply' in interaction)
         return interaction.reply(content);
     return interaction.respond([{name: content, value: content}]);
 
 }
 
-export const needsConfiguration = <T extends CommandInteraction|ButtonInteraction|AutocompleteInteraction,P extends unknown,R extends Promise<P>>(interactor : (guildConfig: Prisma.GuildConfigGetPayload<{}>, interaction: T) => R) => async (interaction: T) => {
-    console.log("ici ? ");
+export const needsConfiguration = <T extends CommandInteraction|ButtonInteraction|AutocompleteInteraction|StringSelectMenuInteraction,P extends unknown,R extends Promise<P>>(interactor : (guildConfig: Prisma.GuildConfigGetPayload<{}>, interaction: T) => R) => async (interaction: T) => {
     if (!interaction.guildId) return reply(interaction, "This command is only available in a server");
 
     const guildConfig = await getGuildIfConfigured(interaction.guildId);

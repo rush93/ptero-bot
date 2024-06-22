@@ -10,12 +10,12 @@ export const data = new ButtonBuilder()
 ;
 
 export const execute = needsConfiguration( async (GuildConfig: Prisma.GuildConfigGetPayload<{}>,interaction: ButtonInteraction) => {
-    const serverId = interaction.message.embeds[0]?.fields[0]?.value ?? null;
+    const serverId = interaction.message.embeds[0]?.footer?.text?.replace('Server ID: ','') ?? null;
     if (!serverId) {
-        return interaction.reply("Server not found");
+        return interaction.reply("Aucun serveur trouvé");
     }
     const pteroClient = new PterodactylClient(GuildConfig.api_url, GuildConfig.token);
     await pteroClient.power(serverId, "start");
 
-    return interaction.reply("Server started");
+    return interaction.reply("La commande de démarrage a été envoyée au serveur");
 });
