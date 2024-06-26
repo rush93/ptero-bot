@@ -10,7 +10,6 @@ FROM node:22-alpine AS production
 WORKDIR /app
 COPY --from=builder /app/dist ./dist
 COPY package*.json .
-COPY .env .
 COPY prisma ./prisma
 RUN npm install --production
 CMD ["npm", "start"]
