@@ -14,6 +14,9 @@ export const execute = needsConfiguration( async (GuildConfig: Prisma.GuildConfi
     if (!serverId) {
         return interaction.reply("Aucun serveur trouvé");
     }
+    if (serverId === '57c47365') {
+        await interaction.reply("https://tenor.com/6fp8.gif");
+    }
 
     const pteroClient = new PterodactylClient(GuildConfig.api_url, GuildConfig.token);
     await pteroClient.power(serverId, "restart");
