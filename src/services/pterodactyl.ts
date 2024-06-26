@@ -40,6 +40,7 @@ export class PterodactylClient {
         }
         const games = {
             'ghcr.io/parkervcp/yolks:nodejs_12': 'NodeJS',
+            'rushr/ptero-bot': 'PteroBot',
         }
         if (dockerImage && typeof dockerImage == 'string' && dockerImage in games) {
             return games[dockerImage as keyof typeof games];
