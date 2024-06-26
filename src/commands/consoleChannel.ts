@@ -1,15 +1,18 @@
-import { CommandInteraction, CommandInteractionOptionResolver, SlashCommandSubcommandBuilder, TextBasedChannel } from "discord.js";
-import { needsConfiguration } from "../../services/guildConfiguration";
+import { CommandInteraction, CommandInteractionOptionResolver, SlashCommandBuilder, SlashCommandSubcommandBuilder, TextBasedChannel } from "discord.js";
+import { needsConfiguration } from "../services/guildConfiguration";
 import { Prisma } from "@prisma/client";
-import { PterodactylWebsocketClient } from "../../services/pterodactylWebsocket";
-import { createConsoleChannel, deleteConsoleChannel, getConsoleChannel, getConsoleChannels } from "../../services/db";
+import { PterodactylWebsocketClient } from "../services/pterodactylWebsocket";
+import { createConsoleChannel, deleteConsoleChannel, getConsoleChannel, getConsoleChannels } from "../services/db";
+import { serverListAutoComplete } from "../services/serverListAutoComplete";
 
-export const data = new SlashCommandSubcommandBuilder()
+export const data = new SlashCommandBuilder()
   .setName("console_channel")
   .setDescription("Create a console channel on the current discord channel")
   .addStringOption(option => option.setName("server").setDescription("The server name").setRequired(true).setAutocomplete(true))
 ;
 
+
+export const autocomplete = serverListAutoComplete("server");
 
 export const messageCallback =  (channel: TextBasedChannel) => async (message:string) => {
     try {

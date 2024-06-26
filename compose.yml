@@ -7,8 +7,11 @@ services:
     volumes:
       - .:/app
     entrypoint: "docker/node/entrypoint.sh"
+    depends_on:
+      - db
   db:
     image: mariadb
     restart: always
     environment:
       MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: ptero-bot

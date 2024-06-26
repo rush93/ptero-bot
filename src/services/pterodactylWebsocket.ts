@@ -3,7 +3,7 @@ import { DiscordAPIError, Guild } from "discord.js";
 import WebSocketClient from "websocket";
 import { deleteConsoleChannel, getConsoleChannels } from "./db";
 import { getGuildIfConfigured } from "./guildConfiguration";
-import { messageCallback } from "../commands/configure/consoleChannel";
+import { messageCallback } from "../commands/consoleChannel";
 
 export const websockets: { [key:string]: PterodactylWebsocketClient } = {};
 

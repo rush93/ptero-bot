@@ -4,6 +4,7 @@ import { commands } from "./commands";
 import { config } from "./config";
 import { buttons } from "./buttons";
 import { initWebsockets, websockets } from "./services/pterodactylWebsocket";
+import { modals } from "./modals";
 
 const client = new Client({
   intents: ["Guilds", "GuildMessages", "DirectMessages", "MessageContent"],
@@ -54,6 +55,14 @@ client.on("interactionCreate", async (interaction) => {
       const command = commands[customId as keyof typeof commands];
       if (command && 'select' in command && typeof command.select == 'function'){
         await command.select(interaction);
+      }
+    }
+
+    if (interaction.isModalSubmit()) {
+      const { customId } = interaction;
+      const modal = modals[customId as keyof typeof modals];
+      if (modal && 'submit' in modal && typeof modal.submit == 'function'){
+        await modal.submit(interaction);
       }
     }
   } catch (error) {
