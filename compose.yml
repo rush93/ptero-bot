@@ -3,6 +3,12 @@ services:
     build:
       context: .
       dockerfile: docker/node/Dockerfile
+      target: builder
     volumes:
       - .:/app
     entrypoint: "docker/node/entrypoint.sh"
+  db:
+    image: mariadb
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: root
