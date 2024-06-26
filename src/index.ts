@@ -53,8 +53,28 @@ client.on("interactionCreate", async (interaction) => {
     if (interaction.isStringSelectMenu()) {
       const { customId } = interaction;
       const command = commands[customId as keyof typeof commands];
-      if (command && 'select' in command && typeof command.select == 'function'){
-        await command.select(interaction);
+      if (command && 'selectString' in command && typeof command.selectString == 'function'){
+        await command.selectString(interaction);
+      }
+      const customIdSplit = customId.split('.')[0];
+      const commandSplited = commands[customIdSplit as keyof typeof commands];
+      console.log(customIdSplit, commandSplited);
+      if (commandSplited && 'selectString' in commandSplited && typeof commandSplited.selectString == 'function'){
+        await commandSplited.selectString(interaction);
+      }
+    }
+
+    if (interaction.isRoleSelectMenu()) {
+      const { customId } = interaction;
+      const command = commands[customId as keyof typeof commands];
+      if (command && 'selectRole' in command && typeof command.selectRole == 'function'){
+        await command.selectRole(interaction);
+      }
+      const customIdSplit = customId.split('.')[0];
+      const commandSplited = commands[customIdSplit as keyof typeof commands];
+      console.log(customIdSplit, commandSplited);
+      if (commandSplited && 'selectRole' in commandSplited && typeof commandSplited.selectRole == 'function'){
+        await commandSplited.selectRole(interaction);
       }
     }
 

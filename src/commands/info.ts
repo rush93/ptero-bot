@@ -14,7 +14,7 @@ export const data = new SlashCommandBuilder()
 
 export const autocomplete = serverListAutoComplete("server");
 
-export const select = needsConfiguration(async(guildConfig: Prisma.GuildConfigGetPayload<{}>, interaction: StringSelectMenuInteraction) => {
+export const selectString = needsConfiguration(async(guildConfig: Prisma.GuildConfigGetPayload<{}>, interaction: StringSelectMenuInteraction) => {
     const serverId = interaction.values[0];
     return replyWithInfo(guildConfig, interaction, serverId);
 });
@@ -83,7 +83,7 @@ const replyWithInfo = async (guildConfig: Prisma.GuildConfigGetPayload<{}>, inte
             new ButtonBuilder()
                 .setLabel("Rejoindre")
                 .setStyle(ButtonStyle.Link)
-                .setURL(`https://rushr.dev/steam-redirect/?ip=${serverData.relationships.allocations.data[0].attributes.ip}:${serverData.relationships.allocations.data[0].attributes.port}`)
+                .setURL(` https://locktech.fr/connect/${serverData.relationships.allocations.data[0].attributes.ip}:${serverData.relationships.allocations.data[0].attributes.port}`)
         ])
     }
 

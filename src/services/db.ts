@@ -63,3 +63,11 @@ export async function getConsoleChannel(guildId: string, channelId: string) {
         }
     })
 }
+
+export async function getPermissions(guildId: string) {
+    return await prisma.permission.findMany({
+        where: {
+            guildId
+        }
+    })
+}

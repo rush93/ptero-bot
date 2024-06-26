@@ -15,6 +15,7 @@ model GuildConfig {
   token String
   api_url String
   consoleChannels ConsoleChannel[]
+  permissions Permission[]
 }
 
 model ConsoleChannel {
@@ -23,4 +24,12 @@ model ConsoleChannel {
   serverId String
   guildConfig GuildConfig @relation(fields: [guildId], references: [guildId])
   guildId String
+}
+
+model Permission {
+  id Int @id @default(autoincrement())
+  guildId String
+  guildConfig GuildConfig @relation(fields: [guildId], references: [guildId])
+  name String
+  roles String
 }
