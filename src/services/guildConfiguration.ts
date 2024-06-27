@@ -18,7 +18,7 @@ export async function getGuildIfConfigured(guildId: string) {
 
 const reply = async (interaction: CommandInteraction|ButtonInteraction|AutocompleteInteraction|StringSelectMenuInteraction, content: string) => {
     if ('reply' in interaction)
-        return interaction.reply(content);
+        return interaction.reply({content, ephemeral: true});
     return interaction.respond([{name: content, value: content}]);
 
 }
