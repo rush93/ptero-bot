@@ -5,7 +5,7 @@ import { getGuildIfConfigured } from "./guildConfiguration";
 
 const intervals: {[key:string]: {number: number, interval: NodeJS.Timeout|null}} = {};
 
-const RefreshDelay = 1000 * 2;
+const RefreshDelay = 1000 * 30;
 
 export const runAutoRefreshMessages = async (guildId: string) => {
     if (guildId in intervals && intervals[guildId].interval !== null) {
