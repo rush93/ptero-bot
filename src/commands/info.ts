@@ -43,8 +43,9 @@ export const getEmbed = async (guildConfig: Prisma.GuildConfigGetPayload<{}>, se
   const createBar = (percent: number) => {
       const minPercent = Math.min(percent, 100);
       const emojiCount = 6;
-      const color = percent < 10 ? '🟩' : percent < 50 ? '🟦' : percent < 90 ? '🟨': percent < 100 ? '🟧': '🟥';
-      return color.repeat(Math.round(emojiCount * minPercent / 100)) + '⬜'.repeat(emojiCount - Math.round(emojiCount * minPercent / 100)) + '\n' + '〰️'.repeat(Math.min(Math.round(emojiCount * minPercent / 100), emojiCount - 2)) + `**${percent}%**`;
+      const nbEmoji = Math.round(emojiCount * minPercent / 100)
+      const color = nbEmoji <= 1 ? '🟩' : percent < 50 ? '🟦' : nbEmoji < emojiCount-1 ? '🟨': percent < 100 ? '🟧': '🟥';
+      return color.repeat(nbEmoji) + '⬜'.repeat(emojiCount - nbEmoji) + '\n' + '〰️'.repeat(Math.min(nbEmoji, emojiCount - 2)) + `**${percent}%**`;
   }
 
   const fields = [
