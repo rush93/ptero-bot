@@ -102,3 +102,32 @@ export async function updatePermission(guildId: string, name: string, roles: str
     }
   })
 }
+
+export async function addAutorefreshMessage(guildId: string, messageId: string, channelId:string, detailed: boolean, withButton: boolean) {
+  return await prisma.autorefreshMessages.create({
+    data: {
+      guildId,
+      messageId,
+      detailed,
+      channelId,
+      withButton,
+    }
+  })
+}
+
+export async function removeAutorefreshMessage(guildId: string, messageId: string) {
+  return await prisma.autorefreshMessages.deleteMany({
+    where: {
+      guildId,
+      messageId
+    }
+  })
+}
+
+export async function getAutorefreshMessages(guildId: string) {
+  return await prisma.autorefreshMessages.findMany({
+    where: {
+      guildId
+    }
+  })
+}

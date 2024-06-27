@@ -16,6 +16,7 @@ model GuildConfig {
   api_url String
   consoleChannels ConsoleChannel[]
   permissions Permission[]
+  autorefreshMessages AutorefreshMessages[]
 }
 
 model ConsoleChannel {
@@ -24,6 +25,16 @@ model ConsoleChannel {
   serverId String
   guildConfig GuildConfig @relation(fields: [guildId], references: [guildId])
   guildId String
+}
+
+model AutorefreshMessages {
+  id Int @id @default(autoincrement())
+  channelId String
+  messageId String
+  detailed Boolean
+  guildId String
+  withButton Boolean @default(true)
+  guildConfig GuildConfig @relation(fields: [guildId], references: [guildId])
 }
 
 model Permission {

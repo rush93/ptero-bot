@@ -4,11 +4,11 @@ import { AutocompleteInteraction } from "discord.js";
 import { PterodactylClient } from "./pterodactyl";
 
 export const serverListAutoComplete = (fieldName:string) => needsConfiguration(async (guildConfig: Prisma.GuildConfigGetPayload<{}>, interaction: AutocompleteInteraction) => {
-    const data = interaction.options.get(fieldName)?.value;
+    const data = interaction.options.get(fieldName)?.value as string;
     
     const pteroClient = new PterodactylClient(guildConfig.api_url, guildConfig.token);
     const servers = (await pteroClient.getServers()).data.filter((server:any) => {
-        return server.attributes.name.search(new RegExp(`${data}`, 'i')) !== -1
+        return server.attributes.name.toLowerCase().includes(data.toLowerCase());
     });
 
     return interaction.respond(servers.map((server:any) => {

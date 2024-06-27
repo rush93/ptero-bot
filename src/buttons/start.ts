@@ -11,12 +11,12 @@ export const data = new ButtonBuilder()
 ;
 
 export const execute = withPermission("start_server", needsConfiguration( async (GuildConfig: Prisma.GuildConfigGetPayload<{}>,interaction: ButtonInteraction) => {
-    const serverId = interaction.message.embeds[0]?.footer?.text?.replace('Server ID: ','') ?? null;
+    const serverId = interaction.message.embeds[0]?.footer?.text?.match(/Server ID: ([a-zA-Z0-9]+)/)?.[1] ?? null;
     if (!serverId) {
-        return interaction.reply("Aucun serveur trouvé");
+        return interaction.reply({content: "Aucun serveur trouvé", ephemeral: true});
     }
     const pteroClient = new PterodactylClient(GuildConfig.api_url, GuildConfig.token);
     await pteroClient.power(serverId, "start");
 
-    return interaction.reply("La commande de démarrage a été envoyée au serveur");
+    return interaction.reply({content: "La commande de démarrage a été envoyée au serveur", ephemeral: true});
 }));

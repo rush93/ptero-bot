@@ -6,8 +6,9 @@ import { buttons } from "./buttons";
 import { initWebsockets, websockets } from "./services/pterodactylWebsocket";
 import { modals } from "./modals";
 import { hasPermission } from "./services/permissions";
+import { runAutoRefreshMessages } from "./services/autorefreshMessages";
 
-const client = new Client({
+export const client = new Client({
   intents: ["Guilds", "GuildMessages", "DirectMessages", "MessageContent"],
 });
 
@@ -18,6 +19,8 @@ client.once("ready", async (bot) => {
     await deployCommands({ guildId: guild.id });
 
     await initWebsockets(await guild.fetch());
+
+    await runAutoRefreshMessages(guild.id);
   })
 });
 
