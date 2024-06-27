@@ -5,6 +5,7 @@ import { config } from "./config";
 import { buttons } from "./buttons";
 import { initWebsockets, websockets } from "./services/pterodactylWebsocket";
 import { modals } from "./modals";
+import { hasPermission } from "./services/permissions";
 
 const client = new Client({
   intents: ["Guilds", "GuildMessages", "DirectMessages", "MessageContent"],
@@ -107,6 +108,12 @@ client.on("interactionCreate", async (interaction) => {
 client.on('messageCreate', async (message) => {
   if (message.author.bot) return;
   if (message.channel.id in websockets && message.content.startsWith("> ")) {
+    const member = await message.guild?.members.fetch(message.author.id);
+    if (!member) return;
+    if (!await hasPermission(member, "send_console_command")) {
+      await message.reply({content: "Vous n'avez pas la permission d'envoyer des commandes au serveur"});
+      return;
+    }
     websockets[message.channel.id].sendCommand(message.content.slice(2));
   }
 });

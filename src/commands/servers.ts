@@ -4,12 +4,13 @@ import { Prisma } from "@prisma/client";
 import { PterodactylClient } from "../services/pterodactyl";
 import { config } from '../config';
 import { commands } from './index';
+import { withPermission } from '../services/permissions';
 
 export const data = new SlashCommandBuilder()
   .setName("servers")
   .setDescription("list the servers");
 
-export const execute = needsConfiguration(async (guildConfig:Prisma.GuildConfigGetPayload<{}>, interaction: CommandInteraction) => {
+export const execute = withPermission('list_servers', needsConfiguration(async (guildConfig:Prisma.GuildConfigGetPayload<{}>, interaction: CommandInteraction) => {
     const pteroClient = new PterodactylClient(guildConfig.api_url, guildConfig.token);
 
     const servers = (await pteroClient.getServers()).data;
@@ -43,4 +44,4 @@ export const execute = needsConfiguration(async (guildConfig:Prisma.GuildConfigG
             url: "https://cdn-icons-png.flaticon.com/512/2917/2917242.png"
         },
     }] , components: [row]});
-});
+}));

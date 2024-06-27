@@ -2,6 +2,7 @@ import { ButtonBuilder, ButtonInteraction, ButtonStyle } from "discord.js";
 import { needsConfiguration } from "../services/guildConfiguration";
 import { Prisma } from "@prisma/client";
 import { PterodactylClient } from "../services/pterodactyl";
+import { withPermission } from '../services/permissions';
 
 export const data = new ButtonBuilder()
     .setCustomId("stop")
@@ -9,7 +10,7 @@ export const data = new ButtonBuilder()
     .setStyle(ButtonStyle.Danger)
 ;
 
-export const execute = needsConfiguration( async (GuildConfig: Prisma.GuildConfigGetPayload<{}>,interaction: ButtonInteraction) => {
+export const execute =  withPermission("stop_server", needsConfiguration( async (GuildConfig: Prisma.GuildConfigGetPayload<{}>,interaction: ButtonInteraction) => {
     const serverId = interaction.message.embeds[0]?.footer?.text?.replace('Server ID: ','') ?? null;
     if (!serverId) {
         return interaction.reply("Serveur non trouvé");
@@ -23,4 +24,4 @@ export const execute = needsConfiguration( async (GuildConfig: Prisma.GuildConfi
     await pteroClient.power(serverId, "stop");
 
     return interaction.reply("La commande d'arrêt a été envoyée au serveur");
-});
+}));

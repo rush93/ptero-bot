@@ -2,6 +2,7 @@ import { ButtonBuilder, ButtonInteraction, ButtonStyle } from "discord.js";
 import { PterodactylClient } from "../services/pterodactyl";
 import { needsConfiguration } from "../services/guildConfiguration";
 import { Prisma } from "@prisma/client";
+import { withPermission } from "../services/permissions";
 
 export const data = new ButtonBuilder()
     .setCustomId("start")
@@ -9,7 +10,7 @@ export const data = new ButtonBuilder()
     .setStyle(ButtonStyle.Success)
 ;
 
-export const execute = needsConfiguration( async (GuildConfig: Prisma.GuildConfigGetPayload<{}>,interaction: ButtonInteraction) => {
+export const execute = withPermission("start_server", needsConfiguration( async (GuildConfig: Prisma.GuildConfigGetPayload<{}>,interaction: ButtonInteraction) => {
     const serverId = interaction.message.embeds[0]?.footer?.text?.replace('Server ID: ','') ?? null;
     if (!serverId) {
         return interaction.reply("Aucun serveur trouvé");
@@ -18,4 +19,4 @@ export const execute = needsConfiguration( async (GuildConfig: Prisma.GuildConfi
     await pteroClient.power(serverId, "start");
 
     return interaction.reply("La commande de démarrage a été envoyée au serveur");
-});
+}));

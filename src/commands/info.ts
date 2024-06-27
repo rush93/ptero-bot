@@ -4,6 +4,7 @@ import { needsConfiguration } from "../services/guildConfiguration";
 import { Prisma } from "@prisma/client";
 import { PterodactylClient } from "../services/pterodactyl";
 import { serverListAutoComplete } from "../services/serverListAutoComplete";
+import { withPermission } from '../services/permissions';
 
 export const data = new SlashCommandBuilder()
   .setName("info")
@@ -12,12 +13,12 @@ export const data = new SlashCommandBuilder()
   .addBooleanOption(option => option.setName("detailed").setDescription("Avec les détails de performance du serveur ?").setRequired(false))
 ;
 
-export const autocomplete = serverListAutoComplete("server");
+export const autocomplete = withPermission("list_servers", serverListAutoComplete("server"));
 
-export const selectString = needsConfiguration(async(guildConfig: Prisma.GuildConfigGetPayload<{}>, interaction: StringSelectMenuInteraction) => {
+export const selectString = withPermission("show_server_info", needsConfiguration(async(guildConfig: Prisma.GuildConfigGetPayload<{}>, interaction: StringSelectMenuInteraction) => {
     const serverId = interaction.values[0];
     return replyWithInfo(guildConfig, interaction, serverId);
-});
+}));
 
 const replyWithInfo = async (guildConfig: Prisma.GuildConfigGetPayload<{}>, interaction: CommandInteraction|StringSelectMenuInteraction, serverId: string, withDetail: boolean = false) => {
     
@@ -103,9 +104,9 @@ const replyWithInfo = async (guildConfig: Prisma.GuildConfigGetPayload<{}>, inte
         components: [row]
     });
 }
-export const execute = needsConfiguration(async(guildConfig: Prisma.GuildConfigGetPayload<{}>, interaction: CommandInteraction) => {
+export const execute = withPermission("show_server_info", needsConfiguration(async(guildConfig: Prisma.GuildConfigGetPayload<{}>, interaction: CommandInteraction) => {
 
     const data = interaction.options.get("server")?.value as string;
     const withDetail = interaction.options.get("detailed")?.value as boolean ?? false;
     return replyWithInfo(guildConfig, interaction, data, withDetail);
-});
+}));

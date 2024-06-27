@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { PterodactylWebsocketClient } from "../services/pterodactylWebsocket";
 import { createConsoleChannel, deleteConsoleChannel, getConsoleChannel, getConsoleChannels } from "../services/db";
 import { serverListAutoComplete } from "../services/serverListAutoComplete";
+import { withPermission } from '../services/permissions';
 
 export const data = new SlashCommandBuilder()
   .setName("console_channel")
@@ -12,7 +13,7 @@ export const data = new SlashCommandBuilder()
 ;
 
 
-export const autocomplete = serverListAutoComplete("server");
+export const autocomplete = withPermission("list_servers", serverListAutoComplete("server"));
 
 export const messageCallback =  (channel: TextBasedChannel) => async (message:string) => {
     try {
@@ -41,7 +42,7 @@ export const connectToChannel = (GuildConfig: Prisma.GuildConfigGetPayload<{}>, 
     new PterodactylWebsocketClient(GuildConfig.api_url, GuildConfig.token, serverId, messageCallback(channel), channel.id ?? 'nan');
 }
 
-export const execute = needsConfiguration(async (GuildConfig: Prisma.GuildConfigGetPayload<{}>, interaction: CommandInteraction) => {
+export const execute = withPermission("update_config", needsConfiguration(async (GuildConfig: Prisma.GuildConfigGetPayload<{}>, interaction: CommandInteraction) => {
     const options = interaction.options as CommandInteractionOptionResolver;
     const serverId = options.getString("server");
     
@@ -60,4 +61,4 @@ export const execute = needsConfiguration(async (GuildConfig: Prisma.GuildConfig
     await createConsoleChannel(interaction.guild?.id ?? 'null', interaction.channel.id, serverId);
 
     return interaction.reply("Le channel a été connecté à la console du serveur!\nfaites `> command` pour envoyer une commande au serveur");
-})
+}))

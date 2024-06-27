@@ -2,6 +2,7 @@ import { ActionRowBuilder, ModalBuilder, TextInputBuilder } from "@discordjs/bui
 import { ModalSubmitInteraction, TextInputStyle } from "discord.js";
 import { PterodactylClient } from "../services/pterodactyl";
 import { getGuildConfig, insertGuildConfig, updateGuildConfig } from "../services/db";
+import { withPermission } from '../services/permissions';
 
 export const modal = new ModalBuilder()
   .setCustomId("configure")
@@ -28,7 +29,7 @@ export const modal = new ModalBuilder()
       ])
   ])
 
-export const submit = async (interaction: ModalSubmitInteraction) => {
+export const submit = withPermission("update_config", async (interaction: ModalSubmitInteraction) => {
   const api_url = interaction.fields.getTextInputValue("api_url");
   const token = interaction.fields.getTextInputValue("token");
 
@@ -51,4 +52,4 @@ export const submit = async (interaction: ModalSubmitInteraction) => {
     await updateGuildConfig(interaction.guildId, { api_url, token });
   }
   interaction.reply("Configuration enregistrée");
-}
+})

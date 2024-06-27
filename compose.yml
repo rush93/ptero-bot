@@ -12,6 +12,10 @@ services:
   db:
     image: mariadb
     restart: always
+    volumes:
+      - data:/var/lib/mysql
     environment:
       MARIADB_ROOT_PASSWORD: root
       MARIADB_DATABASE: ptero-bot
+volumes:
+  data:

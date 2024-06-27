@@ -71,3 +71,34 @@ export async function getPermissions(guildId: string) {
         }
     })
 }
+
+export async function getPermission(guildId: string, name: string) {
+  return await prisma.permission.findFirst({
+    where: {
+      guildId,
+      name
+    }
+  })
+}
+
+export async function insertPermission(guildId: string, name: string, roles: string) {
+  return await prisma.permission.create({
+    data: {
+      guildId,
+      name,
+      roles
+    }
+  })
+}
+
+export async function updatePermission(guildId: string, name: string, roles: string) {
+  return await prisma.permission.updateMany({
+    where: {
+      guildId,
+      name
+    },
+    data: {
+      roles
+    }
+  })
+}
