@@ -13,10 +13,9 @@ export const permissionsList = {
 
 export const hasPermission = async(user: GuildMember, permissionKey: string) => {
 
-  // if (user.permissions.has(PermissionFlagsBits.Administrator)) {
-  //   console.log('is admin');
-  //   return true;
-  // }
+  if (user.permissions.has(PermissionFlagsBits.Administrator)) {
+    return true;
+  }
 
   const permission = await getPermission(user.guild.id, permissionKey);
 
