@@ -1,4 +1,4 @@
-import { ActionRowBuilder, CommandInteraction, RoleSelectMenuBuilder, RoleSelectMenuInteraction, SlashCommandSubcommandBuilder, StringSelectMenuBuilder, StringSelectMenuInteraction } from "discord.js";
+import { ActionRowBuilder, CommandInteraction, Guild, MentionableSelectMenuBuilder, RoleSelectMenuBuilder, RoleSelectMenuInteraction, SlashCommandSubcommandBuilder, StringSelectMenuBuilder, StringSelectMenuInteraction } from "discord.js";
 import { getPermission, getPermissions, insertPermission, updatePermission } from "../services/db";
 import { permissionsList, withPermission } from '../services/permissions';
 
@@ -10,7 +10,7 @@ export const data = new SlashCommandSubcommandBuilder()
 
 const messagesRolesSelected: {[key:string]:string} = {}
 
-const getEmbed = async (guildId: string, message: string|null = null, selectedRole: string|null = null) => {
+const getEmbed = async (guildId: string, guild: Guild,  message: string|null = null, selectedRole: string|null = null) => {
 
   const permissionsDb = await getPermissions(guildId);
 
@@ -26,12 +26,24 @@ const getEmbed = async (guildId: string, message: string|null = null, selectedRo
     id: 0
   }));
 
-  const row = new ActionRowBuilder<RoleSelectMenuBuilder>()
+  const roles = await guild.roles.fetch();
+
+  const row = new ActionRowBuilder<StringSelectMenuBuilder>()
     .addComponents(
-      new RoleSelectMenuBuilder()
+      new StringSelectMenuBuilder()
         .setCustomId("permissions.roles")
         .setPlaceholder("Choisissez un rôle")
-        .setDefaultRoles(selectedRole ? [selectedRole] : [])
+        .setOptions([...roles.map(role => {
+          return {
+            label: role.name,
+            value: role.id
+          }
+        }), ...[
+          {
+            label: "Everyone",
+            value: "everyone"
+          }
+        ]])
     )
 
   const row2 = new ActionRowBuilder<StringSelectMenuBuilder>()
@@ -48,6 +60,14 @@ const getEmbed = async (guildId: string, message: string|null = null, selectedRo
           })
         )
     )
+
+    const row3 = new ActionRowBuilder<MentionableSelectMenuBuilder>()
+      .addComponents(
+        new MentionableSelectMenuBuilder()
+          .setCustomId("permissions.roles2")
+          .setPlaceholder("Choisissez un rôle")
+          //.setDefaultValues(selectedRole ? [selectedRole] : [])
+      )
 
   const fields = permissions.map(permission => {
     const roles = JSON.parse(permission.roles) as string[];
@@ -70,14 +90,17 @@ const getEmbed = async (guildId: string, message: string|null = null, selectedRo
         },
       }
     ],
-    components: [row, row2]
+    components: [row, row2, row3]
   }
 }
 
-export const selectString = withPermission("update_config", async (interraction: StringSelectMenuInteraction) => {
+const selectPermissions = async (interraction: StringSelectMenuInteraction) => {
+  if (!interraction.guild) {
+    return interraction.reply({content: "Impossible de récupérer les informations du serveur", ephemeral: true});
+  }
   const selectedRole = messagesRolesSelected[interraction.message.id];
   if (!selectedRole) {
-    return interraction.update(await getEmbed(interraction.guildId ?? '', "⚠️ **Vous devez d'abord sélectionner un rôle**"));
+    return interraction.update(await getEmbed(interraction.guildId ?? '', interraction.guild, "⚠️ **Vous devez d'abord sélectionner un rôle**"));
   }
 
   const selectedPermission = interraction.values[0];
@@ -95,14 +118,28 @@ export const selectString = withPermission("update_config", async (interraction:
     await updatePermission(interraction.guildId ?? '', selectedPermission, JSON.stringify(roles));
   }
 
-  return interraction.update(await getEmbed(interraction.guildId ?? '', null, selectedRole));
+  return interraction.update(await getEmbed(interraction.guildId ?? '',interraction.guild, null, selectedRole));
+}
+
+export const selectString = withPermission("update_config", async (interraction: StringSelectMenuInteraction) => {
+  if (interraction.customId === "permissions.permissions") {
+    return selectPermissions(interraction);
+  }
+  return selectStringRole(interraction);
 });
 
-export const selectRole = withPermission("update_config", async (interraction: RoleSelectMenuInteraction) => {
+export const selectStringRole = async (interraction: StringSelectMenuInteraction) => {
+  if (!interraction.guild) {
+    return interraction.reply({content: "Impossible de récupérer les informations du serveur", ephemeral: true});
+  }
   messagesRolesSelected[interraction.message.id] = interraction.values[0];
-  return interraction.update(await getEmbed(interraction.guildId ?? '', null, interraction.values[0]));
-})
+  return interraction.update(await getEmbed(interraction.guildId ?? '', interraction.guild, null, interraction.values[0]));
+}
 
 export const execute = withPermission("update_config", async (interraction: CommandInteraction) => {
-  return interraction.reply(await getEmbed(interraction.guildId ?? '', null, null));
+  if (!interraction.guild) {
+    return interraction.reply({content: "Impossible de récupérer les informations du serveur", ephemeral: true});
+  }
+
+  return interraction.reply(await getEmbed(interraction.guildId ?? '',interraction.guild, null, null));
 })
