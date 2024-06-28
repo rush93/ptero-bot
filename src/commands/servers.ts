@@ -10,7 +10,7 @@ export const data = new SlashCommandBuilder()
   .setName("servers")
   .setDescription("list the servers");
 
-export const execute = withPermission('list_servers', needsConfiguration(async (guildConfig:Prisma.GuildConfigGetPayload<{}>, interaction: CommandInteraction) => {
+export const execute = withPermission('show_server_info', needsConfiguration(async (guildConfig:Prisma.GuildConfigGetPayload<{}>, interaction: CommandInteraction) => {
     const pteroClient = new PterodactylClient(guildConfig.api_url, guildConfig.token);
 
     const servers = (await pteroClient.getServers()).data;

@@ -26,6 +26,7 @@ export const modal = new ModalBuilder()
           .setLabel("Token d'api")
           .setRequired(true)
           .setStyle(TextInputStyle.Short)
+          .setPlaceholder("obtenir un token: votre panel -> compte -> api credentials")
       ])
   ])
 

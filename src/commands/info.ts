@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, SlashCommandBuilder, StringSelectMenuInteraction, inlineCode } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, Guild, PermissionsBitField, SlashCommandBuilder, StringSelectMenuInteraction, inlineCode } from "discord.js";
 import { buttons } from "../buttons";
 import { needsConfiguration } from "../services/guildConfiguration";
 import { Prisma } from "@prisma/client";
@@ -7,7 +7,7 @@ import { serverListAutoComplete } from "../services/serverListAutoComplete";
 import { withPermission } from '../services/permissions';
 import { addAutorefreshMessage } from "../services/db";
 import { runAutoRefreshMessages } from "../services/autorefreshMessages";
-import { messageCallback } from './consoleChannel';
+import { client } from "..";
 
 export const data = new SlashCommandBuilder()
   .setName("info")
@@ -18,7 +18,7 @@ export const data = new SlashCommandBuilder()
   .addBooleanOption(option => option.setName("withbuttons").setDescription("Affiche les boutons d'action du serveur").setRequired(false))
 ;
 
-export const autocomplete = withPermission("list_servers", serverListAutoComplete("server"));
+export const autocomplete = withPermission("show_server_info", serverListAutoComplete("server"));
 
 export const selectString = withPermission("show_server_info", needsConfiguration(async(guildConfig: Prisma.GuildConfigGetPayload<{}>, interaction: StringSelectMenuInteraction) => {
     const serverId = interaction.values[0];
@@ -28,10 +28,16 @@ export const selectString = withPermission("show_server_info", needsConfiguratio
 export const getEmbed = async (guildConfig: Prisma.GuildConfigGetPayload<{}>, serverId: string, withDetail: boolean, withButtons: boolean) => {
   const pteroClient = new PterodactylClient(guildConfig.api_url, guildConfig.token);
 
-  const serverData = (await pteroClient.getServer(serverId)).attributes ?? null;
+  let serverData;
+
+  try {
+    serverData = (await pteroClient.getServer(serverId)).attributes ?? null;
+  } catch {
+    return { content: "Server not found", ephemeral: true};
+  }
 
   if (!serverData) {
-      return { content: "Server not found" };
+      return { content: "Server not found", ephemeral: true};
   }
   const ressources = (await pteroClient.getRessources(serverData.identifier)).attributes;
 
@@ -129,6 +135,29 @@ export const execute = withPermission("show_server_info", needsConfiguration(asy
     const withDetail = interaction.options.get("detailed")?.value as boolean ?? false;
     const autoRefresh = interaction.options.get("autorefresh")?.value as boolean ?? false;
     const withButtons = interaction.options.get("withbuttons")?.value as boolean ?? true;
+
+    if(autoRefresh) {
+      const botMember = await interaction.guild?.members.me;
+      if(!botMember) {
+        return interaction.reply({content: "Je n'ai pas pu trouver le bot", ephemeral: true});
+      }
+
+      const channel = await interaction.guild?.channels.fetch(interaction.channel?.id ?? '');
+      if (!channel || !('permissionOverwrites' in channel)) {
+        return interaction.reply({content: "Je n'ai pas pu trouver le salon", ephemeral: true});
+      }
+
+      if (!channel.permissionsFor(botMember)?.has(PermissionsBitField.Flags.EmbedLinks) 
+        || !channel.permissionsFor(botMember)?.has(PermissionsBitField.Flags.ViewChannel) 
+        || !channel.permissionsFor(botMember)?.has(PermissionsBitField.Flags.ReadMessageHistory)
+      ){
+        try {
+          await channel.permissionOverwrites.create(botMember, {EmbedLinks: true, ViewChannel: true, ReadMessageHistory: true});
+        } catch {
+          return interaction.reply({content: "Aie! je n'ai pas les bonnes permissions dans ce channel, il me faut au minimum: pouvoir voir le channel, pouvoir envoyer des liens, pouvoir voir l'historique des messages.", ephemeral: true});
+        }
+      }
+    }
 
     return replyWithInfo(guildConfig, interaction, data, withDetail, autoRefresh, withButtons);
 }));

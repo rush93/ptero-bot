@@ -1,10 +1,11 @@
-import { CommandInteraction, CommandInteractionOptionResolver, SlashCommandBuilder, SlashCommandSubcommandBuilder, TextBasedChannel } from "discord.js";
+import { CommandInteraction, CommandInteractionOptionResolver, PermissionsBitField, SlashCommandBuilder, SlashCommandSubcommandBuilder, TextBasedChannel } from "discord.js";
 import { needsConfiguration } from "../services/guildConfiguration";
 import { Prisma } from "@prisma/client";
 import { PterodactylWebsocketClient } from "../services/pterodactylWebsocket";
 import { createConsoleChannel, deleteConsoleChannel, getConsoleChannel, getConsoleChannels } from "../services/db";
 import { serverListAutoComplete } from "../services/serverListAutoComplete";
 import { withPermission } from '../services/permissions';
+import { client } from "..";
 
 export const data = new SlashCommandBuilder()
   .setName("console_channel")
@@ -13,7 +14,7 @@ export const data = new SlashCommandBuilder()
 ;
 
 
-export const autocomplete = withPermission("list_servers", serverListAutoComplete("server"));
+export const autocomplete = withPermission("update_config", serverListAutoComplete("server"));
 
 export const messageCallback =  (channel: TextBasedChannel) => async (message:string) => {
     try {
@@ -59,6 +60,27 @@ export const execute = withPermission("update_config", needsConfiguration(async 
     await connectToChannel(GuildConfig, serverId, interaction.channel)
 
     await createConsoleChannel(interaction.guild?.id ?? 'null', interaction.channel.id, serverId);
+
+    const botMember = await interaction.guild?.members.me;
+    if(!botMember) {
+      return interaction.reply({content: "Je n'ai pas pu trouver le bot", ephemeral: true});
+    }
+
+    const channel = await interaction.guild?.channels.fetch(interaction.channel?.id ?? '');
+    if (!channel || !('permissionOverwrites' in channel)) {
+      return interaction.reply({content: "Je n'ai pas pu trouver le salon", ephemeral: true});
+    }
+
+    if (!channel.permissionsFor(botMember)?.has(PermissionsBitField.Flags.SendMessages) 
+      || !channel.permissionsFor(botMember)?.has(PermissionsBitField.Flags.ViewChannel) 
+      || !channel.permissionsFor(botMember)?.has(PermissionsBitField.Flags.ReadMessageHistory)
+    ){
+      try {
+        await channel.permissionOverwrites.create(botMember, {SendMessages: true, ViewChannel: true, ReadMessageHistory: true});
+      } catch {
+        return interaction.reply({content: "le channel a été connecté, mais Attention cela ne marche pas encore! je n'ai pas les bonnes permissions dans ce channel, il me faut au minimum: pouvoir voir le channel, pouvoir envoyer des messages, pouvoir voir l'historique des messages.", ephemeral: true});
+      }
+    }
 
     return interaction.reply("Le channel a été connecté à la console du serveur!\nfaites `> command` pour envoyer une commande au serveur");
 }))

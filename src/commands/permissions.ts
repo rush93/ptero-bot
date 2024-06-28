@@ -1,6 +1,7 @@
 import { ActionRowBuilder, CommandInteraction, RoleSelectMenuBuilder, RoleSelectMenuInteraction, SlashCommandSubcommandBuilder, StringSelectMenuBuilder, StringSelectMenuInteraction } from "discord.js";
 import { getPermission, getPermissions, insertPermission, updatePermission } from "../services/db";
 import { permissionsList, withPermission } from '../services/permissions';
+import { needsConfiguration } from "../services/guildConfiguration";
 
 
 export const data = new SlashCommandSubcommandBuilder()
@@ -103,6 +104,6 @@ export const selectRole = withPermission("update_config", async (interraction: R
   return interraction.update(await getEmbed(interraction.guildId ?? '', null, interraction.values[0]));
 })
 
-export const execute = withPermission("update_config", async (interraction: CommandInteraction) => {
+export const execute = withPermission("update_config", needsConfiguration(async (guildConfig, interraction: CommandInteraction) => {
   return interraction.reply(await getEmbed(interraction.guildId ?? '', null, null));
-})
+}))

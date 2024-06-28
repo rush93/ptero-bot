@@ -57,7 +57,7 @@ export const runAutoRefreshMessages = async (guildId: string) => {
             await removeAutorefreshMessage(guildId, message.messageId);
             return;
           }
-          discordMessage.edit(await getEmbed(guildInfo, serverId, message.detailed, message.withButton))
+          await discordMessage.edit(await getEmbed(guildInfo, serverId, message.detailed, message.withButton))
         } catch(e) {
           if (e && typeof e === 'object' && 'code' in e && (e.code === 10003 || e.code === 10008)) {
             await removeAutorefreshMessage(guildId, message.messageId);

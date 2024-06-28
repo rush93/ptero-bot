@@ -10,7 +10,7 @@ export const data = new ButtonBuilder()
     .setStyle(ButtonStyle.Danger)
 ;
 
-export const execute =  withPermission("stop_server", needsConfiguration( async (GuildConfig: Prisma.GuildConfigGetPayload<{}>,interaction: ButtonInteraction) => {
+export const execute =  withPermission("server_actions", needsConfiguration( async (GuildConfig: Prisma.GuildConfigGetPayload<{}>,interaction: ButtonInteraction) => {
     const serverId = interaction.message.embeds[0]?.footer?.text?.match(/Server ID: ([a-zA-Z0-9]+)/)?.[1] ?? null;
     if (!serverId) {
         return interaction.reply({content: "Serveur non trouvé", ephemeral: true});
