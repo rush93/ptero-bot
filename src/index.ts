@@ -109,15 +109,25 @@ client.on("interactionCreate", async (interaction) => {
 });
 
 client.on('messageCreate', async (message) => {
-  if (message.author.bot) return;
-  if (message.channel.id in websockets && message.content.startsWith("> ")) {
-    const member = await message.guild?.members.fetch(message.author.id);
-    if (!member) return;
-    if (!await hasPermission(member, "send_console_command")) {
-      await message.reply({content: "Vous n'avez pas la permission d'envoyer des commandes au serveur"});
-      return;
+  try {
+      
+    if (message.author.bot) return;
+    if (message.channel.id in websockets && message.content.startsWith("> ")) {
+      const member = await message.guild?.members.fetch(message.author.id);
+      if (!member) return;
+      if (!await hasPermission(member, "send_console_command")) {
+        try {
+          await message.reply({content: "Vous n'avez pas la permission d'envoyer des commandes au serveur"});
+        } catch {
+          return
+        }
+        return;
+      }
+      websockets[message.channel.id].sendCommand(message.content.slice(2));
     }
-    websockets[message.channel.id].sendCommand(message.content.slice(2));
+  
+  } catch(e) {
+    console.log(e);
   }
 });
 

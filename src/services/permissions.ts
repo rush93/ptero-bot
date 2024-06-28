@@ -35,7 +35,6 @@ const reply = async (interaction: Interaction, content: string) => {
   } catch {
     return;
   }
-
 }
 
 export const withPermission = <T extends Interaction,P extends unknown,R extends Promise<P>>(permissionKey: keyof typeof permissionsList, interactor : (interaction: T) => R) => async (interaction: T) => {
