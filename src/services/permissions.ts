@@ -28,9 +28,13 @@ export const hasPermission = async(user: GuildMember, permissionKey: string) => 
 type Interaction = CommandInteraction|ButtonInteraction|AutocompleteInteraction|MessageComponentInteraction|ModalSubmitInteraction;
 
 const reply = async (interaction: Interaction, content: string) => {
-  if ('reply' in interaction)
-      return interaction.reply({content, ephemeral: true});
-  return interaction.respond([{name: content, value: content}]);
+  try {
+    if ('reply' in interaction)
+        return interaction.reply({content, ephemeral: true});
+    return interaction.respond([{name: content, value: content}]);
+  } catch {
+    return;
+  }
 
 }
 
