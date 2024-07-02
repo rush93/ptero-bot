@@ -143,6 +143,7 @@ export const getEmbed = async (guildConfig: Prisma.GuildConfigGetPayload<{}>, se
         },
         timestamp: (new Date()).toISOString(),
     }],
+    content: "",
     components: row.components.length > 0 ? [row] : [],
     fetchReply: true
   }
