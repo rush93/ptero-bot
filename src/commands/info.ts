@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, Guild, PermissionsBitField, SlashCommandBuilder, StringSelectMenuInteraction, inlineCode } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, EmbedField, Guild, PermissionsBitField, SlashCommandBuilder, StringSelectMenuInteraction, inlineCode } from "discord.js";
 import { buttons } from "../buttons";
 import { needsConfiguration } from "../services/guildConfiguration";
 import { Prisma } from "@prisma/client";
@@ -7,7 +7,7 @@ import { serverListAutoComplete } from "../services/serverListAutoComplete";
 import { withPermission } from '../services/permissions';
 import { addAutorefreshMessage } from "../services/db";
 import { runAutoRefreshMessages } from "../services/autorefreshMessages";
-import { client } from "..";
+import { GameDig, games } from "gamedig";
 
 export const data = new SlashCommandBuilder()
   .setName("info")
@@ -54,6 +54,35 @@ export const getEmbed = async (guildConfig: Prisma.GuildConfigGetPayload<{}>, se
       return color.repeat(nbEmoji) + '⬜'.repeat(emojiCount - nbEmoji) + '\n' + '〰️'.repeat(Math.min(nbEmoji, emojiCount - 2)) + `**${percent}%**`;
   }
 
+  const gameType = pteroClient.getGameType({attributes: serverData});
+  const serverIp = serverData.relationships.allocations?.data[0]?.attributes?.ip;
+  const serverPort = serverData.relationships.allocations?.data[0]?.attributes?.port;
+  let gameFields: EmbedField[] = [];
+  if (gameType in games) {
+    const data = await GameDig.query({
+      type: gameType,
+      host: serverIp,
+      port: serverPort
+    });
+    gameFields = [
+      {
+        name: "🎮 Jeu",
+        value: games[gameType].name,
+        inline: true
+      },
+      {
+        name: "👥 Joueurs",
+        value: `${data.players.length}/${data.maxplayers}`,
+        inline: true
+      },
+      {
+        name: "🗺️ Map",
+        value: data.map,
+        inline: true
+      }
+    ]
+  }
+
   const fields = [
       {
           name: `${{running: "🟢", offline: "🔴", starting: "🟡"}[state]} Statut`,
@@ -63,8 +92,9 @@ export const getEmbed = async (guildConfig: Prisma.GuildConfigGetPayload<{}>, se
       {
           name: "🌐 Adresse IP",
           inline: false,
-          value: `${serverData.relationships.allocations?.data[0]?.attributes?.ip}:${serverData.relationships.allocations?.data[0]?.attributes?.port}`
+          value: `${serverIp}:${serverPort}`
       },
+      ...gameFields,
       {
           name: `💻 CPU`,
           inline: true,

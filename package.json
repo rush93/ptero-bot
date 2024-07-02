@@ -12,10 +12,12 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^5.15.1",
+    "@types/gamedig": "^5.0.3",
     "@types/websocket": "^1.0.10",
     "axios": "^1.7.2",
     "discord.js": "^14.15.3",
     "dotenv": "^16.4.5",
+    "gamedig": "^5.0.1",
     "websocket": "^1.0.35"
   },
   "devDependencies": {

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { games } from 'gamedig';
 
 export class PterodactylClient {
 
@@ -31,37 +32,48 @@ export class PterodactylClient {
         return result.data;
     }
 
-    detectGame(server: object) {
-        if (!server || !('attributes' in server) || typeof server.attributes !== 'object' || !server.attributes || !('docker_image' in server.attributes)) return "Inconnu";
+    getGameName(type: string) {
+      if(type in games) {
+        return games[type].name;
+      }
+      const trans = {
+        "nodejs": "NodeJS",
+        "pteroBot": "PteroBot"
+      }
+      if (type in trans) {
+        return trans[type as keyof typeof trans];
+      }
+      return "Inconnu";
+    }
+
+    getGameType(server: object) {
+        if (!server || !('attributes' in server) || typeof server.attributes !== 'object' || !server.attributes || !('docker_image' in server.attributes)) return "unknown";
         const dockerImage = server.attributes.docker_image ?? null;
 
         if (server.attributes.docker_image == 'ghcr.io/pterodactyl/games:source') {
             return this.detectGameSource(server);
         }
         const games = {
-            'ghcr.io/parkervcp/yolks:nodejs_12': 'NodeJS',
-            'rushr/ptero-bot': 'PteroBot',
+            'ghcr.io/parkervcp/yolks:nodejs_12': 'nodejs',
+            'rushr/ptero-bot': 'pteroBot',
         }
         if (dockerImage && typeof dockerImage == 'string' && dockerImage in games) {
             return games[dockerImage as keyof typeof games];
         }
-        return "Inconnu";
+        console.error(`Game type ${server.attributes.docker_image} not found: ${'name' in server.attributes ? server.attributes.name : 'unknown'}`);
+        return "unknown";
     }
 
     private detectGameSource(server: object) {
-        if (!server || !('attributes' in server) || typeof server.attributes !== 'object' || !server.attributes || !('invocation' in server.attributes) || typeof server.attributes.invocation !== 'string') return "Inconnu";
+        if (!server || !('attributes' in server) || typeof server.attributes !== 'object' || !server.attributes || !('invocation' in server.attributes) || typeof server.attributes.invocation !== 'string') return "unknown";
 
         const matches = server.attributes.invocation.match(/-game\s+([^\s]+)/);
         if (matches && matches.length > 1) {
-            
-            const trans = {
-                garrysmod: "Garry's Mod",
-            }
 
-            return matches[1] in trans ? trans[matches[1] as keyof typeof trans] : matches[1];
+            return matches[1];
         }
 
-        return "Inconnu";
+        return "unknown";
     }
 
     private requestPost(url: string, data: unknown) {

@@ -2,8 +2,6 @@ import { ActionRowBuilder, CommandInteraction, SlashCommandBuilder, StringSelect
 import { needsConfiguration } from '../services/guildConfiguration';
 import { Prisma } from "@prisma/client";
 import { PterodactylClient } from "../services/pterodactyl";
-import { config } from '../config';
-import { commands } from './index';
 import { withPermission } from '../services/permissions';
 
 export const data = new SlashCommandBuilder()
@@ -18,7 +16,7 @@ export const execute = withPermission('show_server_info', needsConfiguration(asy
     const fields = servers.map((server:any) => {   
         return {
             name: server.attributes.name,
-            value: `🌐 - ${server.attributes.relationships.allocations.data[0].attributes.ip}:${server.attributes.relationships.allocations.data[0].attributes.port}\n🎮 - ${pteroClient.detectGame(server)}\n `
+            value: `🌐 - ${server.attributes.relationships.allocations.data[0].attributes.ip}:${server.attributes.relationships.allocations.data[0].attributes.port}\n🎮 - ${pteroClient.getGameName(pteroClient.getGameType(server))}\n `
         }
     });
 
