@@ -21,8 +21,8 @@ export const initWebsockets = async (guild: Guild) => {
             if (!channel || !channel.isTextBased()) {
                 continue;
             }
-            new PterodactylWebsocketClient(guildConfig.api_url, guildConfig.token, consoleChannel.serverId, messageCallback(channel), consoleChannel.channelId);
-            channel.send("Le channel a été reconnecté à la console du serveur!\nfaites `> command` pour envoyer une commande au serveur");
+            await new PterodactylWebsocketClient(guildConfig.api_url, guildConfig.token, consoleChannel.serverId, messageCallback(channel), consoleChannel.channelId);
+            await channel.send("Le channel a été reconnecté à la console du serveur!\nfaites `> command` pour envoyer une commande au serveur");
         } catch (e) {
             if (e && typeof e == 'object' && 'code' in e && e.code === 10003) {
                 await deleteConsoleChannel(guild.id, consoleChannel.channelId);
@@ -53,7 +53,7 @@ export class PterodactylWebsocketClient {
     }
 
     private async initSocket(api_url:string, api_token:string, server_id:string, consoleCallBack: (message:string) => void) {
-
+      try {
         const { data } = (await axios.get(`${api_url}/api/client/servers/${server_id}/websocket`, {
             headers: {
                 Authorization: `Bearer ${api_token}`,
@@ -93,6 +93,9 @@ export class PterodactylWebsocketClient {
             });
 
         });
+      } catch (e) {
+          console.error('websocket error:'  + (typeof e === 'object' && e && 'message' in e ? e.message : 'Unknown error'));
+      }
     }
 
     private async renewToken(api_url:string, api_token:string, server_id:string) {
