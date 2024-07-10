@@ -36,7 +36,6 @@ export const initWebsockets = async (guild: Guild) => {
               return;
             }
             await new PterodactylWebsocketClient(guildConfig.api_url, guildConfig.token, consoleChannel.serverId, messageCallback(channel), consoleChannel.channelId);
-            await channel.send("Le channel a été reconnecté à la console du serveur!\nfaites `> command` pour envoyer une commande au serveur");
         } catch (e) {
             if (e && typeof e == 'object' && 'code' in e && e.code === 10003) {
                 await deleteConsoleChannel(guild.id, consoleChannel.channelId);
