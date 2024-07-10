@@ -13,13 +13,18 @@ export const execute = withPermission('show_server_info', needsConfiguration(asy
 
     const servers = (await pteroClient.getServers()).data;
 
-    const fields = servers.map((server:any) => {   
+    let fields = servers.map((server:any) => {   
         return {
             name: server.attributes.name,
             value: `🌐 - ${server.attributes.relationships.allocations.data[0].attributes.ip}:${server.attributes.relationships.allocations.data[0].attributes.port}\n🎮 - ${pteroClient.getGameName(pteroClient.getGameType(server))}\n `
         }
     });
-
+    if (fields.length == 0) {
+      fields = [{
+        name: 'Aucun serveur',
+        value: 'Vous ne pocédé aucun serveur pour le moment. Créez en un sur votre panel pterodactyl.'
+      }]
+    }
     const row = new ActionRowBuilder<StringSelectMenuBuilder>()
         .addComponents(
             new StringSelectMenuBuilder()
@@ -41,5 +46,5 @@ export const execute = withPermission('show_server_info', needsConfiguration(asy
         thumbnail: {
             url: "https://cdn-icons-png.flaticon.com/512/2917/2917242.png"
         },
-    }] , components: [row]});
+    }] , components: servers.length !== 0 ? [row] : []});
 }));

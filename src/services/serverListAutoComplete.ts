@@ -11,6 +11,9 @@ export const serverListAutoComplete = (fieldName:string) => needsConfiguration(a
         return server.attributes.name.toLowerCase().includes(data.toLowerCase());
     });
 
+    if (servers.length == 0) {
+      return interaction.respond([{ name: 'Aucun serveur trouvé', value: 'none' }]);
+    } 
     return interaction.respond(servers.map((server:any) => {
         return {
             name: server.attributes.name,
