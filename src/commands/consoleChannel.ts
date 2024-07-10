@@ -6,6 +6,7 @@ import { createConsoleChannel, deleteConsoleChannel, getConsoleChannel, getConso
 import { serverListAutoComplete } from "../services/serverListAutoComplete";
 import { withPermission } from '../services/permissions';
 import { client } from "..";
+import { PterodactylClient } from "../services/pterodactyl";
 
 export const data = new SlashCommandBuilder()
   .setName("console_channel")
@@ -55,6 +56,18 @@ export const execute = withPermission("update_config", needsConfiguration(async 
 
     if (!!consoleChannel) {
         await deleteConsoleChannel(interaction.guild?.id ?? 'null', interaction.channel.id);
+    }
+
+    try {
+      const client = new PterodactylClient(GuildConfig.api_url, GuildConfig.token);
+      const server = await client.getServer(serverId);
+      if (!server) {
+        await interaction.reply(`Le serveur avec l'id ${serverId} n'existe pas`);
+        return;
+      }
+    } catch {
+      await interaction.reply(`Le serveur avec l'id ${serverId} n'existe pas`);
+      return;
     }
 
     await connectToChannel(GuildConfig, serverId, interaction.channel)

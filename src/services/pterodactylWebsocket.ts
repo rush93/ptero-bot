@@ -4,6 +4,7 @@ import WebSocketClient from "websocket";
 import { deleteConsoleChannel, getConsoleChannels } from "./db";
 import { getGuildIfConfigured } from "./guildConfiguration";
 import { messageCallback } from "../commands/consoleChannel";
+import { PterodactylClient } from "./pterodactyl";
 
 export const websockets: { [key:string]: PterodactylWebsocketClient } = {};
 
@@ -20,6 +21,19 @@ export const initWebsockets = async (guild: Guild) => {
             const channel = await guild.channels.fetch(consoleChannel.channelId);
             if (!channel || !channel.isTextBased()) {
                 continue;
+            }
+            try {
+              const client = new PterodactylClient(guildConfig.api_url, guildConfig.token);
+              const server = await client.getServer(consoleChannel.serverId);
+              if (!server) {
+                await deleteConsoleChannel(guild.id, consoleChannel.channelId);
+                await channel.send(`Le serveur ${consoleChannel.serverId} n'existe pas, veuillez vérifier les informations et recréer la connection a la console`);
+                return;
+              }
+            } catch {
+              await deleteConsoleChannel(guild.id, consoleChannel.channelId);
+              await channel.send(`Le serveur ${consoleChannel.serverId} n'existe pas, veuillez vérifier les informations et recréer la connection a la console`);
+              return;
             }
             await new PterodactylWebsocketClient(guildConfig.api_url, guildConfig.token, consoleChannel.serverId, messageCallback(channel), consoleChannel.channelId);
             await channel.send("Le channel a été reconnecté à la console du serveur!\nfaites `> command` pour envoyer une commande au serveur");
@@ -41,6 +55,7 @@ export class PterodactylWebsocketClient {
         if (channelId in websockets) {
             websockets[channelId].ws?.close();
         }
+        
         this.initSocket(api_url, api_token, server_id, consoleCallBack)
         websockets[channelId] = this;
     }
@@ -54,6 +69,17 @@ export class PterodactylWebsocketClient {
 
     private async initSocket(api_url:string, api_token:string, server_id:string, consoleCallBack: (message:string) => void) {
       try {
+        try {
+          const client = new PterodactylClient(api_url, api_token);
+          const server = await client.getServer(server_id);
+          if (!server) {
+            consoleCallBack(`Le serveur ${server_id} n'existe pas, veuillez vérifier le serveur id dans la configuration du serveur discord`);
+            return;
+          }
+        } catch {
+          consoleCallBack(`Le serveur ${server_id} n'existe pas, veuillez vérifier le serveur id dans la configuration du serveur discord`);
+          return;
+        }
         const { data } = (await axios.get(`${api_url}/api/client/servers/${server_id}/websocket`, {
             headers: {
                 Authorization: `Bearer ${api_token}`,
@@ -94,7 +120,7 @@ export class PterodactylWebsocketClient {
 
         });
       } catch (e) {
-          console.error('websocket error:'  + (typeof e === 'object' && e && 'message' in e ? e.message : 'Unknown error'));
+          console.log('websocket error:'  + (typeof e === 'object' && e && 'message' in e ? e.message : 'Unknown error'));
       }
     }
 
